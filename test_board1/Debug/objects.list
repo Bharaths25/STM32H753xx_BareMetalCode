@@ -1,0 +1,5 @@
+"./Src/main.o"
+"./Src/stm32h753_gpio_driver.o"
+"./Src/syscalls.o"
+"./Src/sysmem.o"
+"./Startup/startup_stm32h753iitx.o"
