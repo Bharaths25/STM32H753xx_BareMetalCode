@@ -661,7 +661,7 @@
 #define FMC_Bank5_6_R         ((FMC_Bank5_6_RegDef_t *) FMC_Bank5_6_R_BASE)
 
 
-#define QUADSPI               ((QUADSPI_RegDef_t *) QSPI_R_BASE)
+#define QUADSPI               ((QUADSPI_RegDef_t_t *) QSPI_R_BASE)
 #define DLYB_QUADSPI          ((DLYB_RegDef_t *) DLYB_QSPI_BASE)
 #define SDMMC1                ((SDMMC_RegDef_t *) SDMMC1_BASE)
 #define DLYB_SDMMC1           ((DLYB_RegDef_t *) DLYB_SDMMC1_BASE)
@@ -725,6 +725,32 @@ typedef struct{
 	                           AFR[1] : Alternate Function high register  Base_Address  0x24  */
 }GPIO_RegDef_t;
 
+
+/**
+  * @brief Serial Peripheral Interface
+  */
+
+typedef struct
+{
+   V uint32_t CR1;           /*!< SPI/I2S Control register 1,                      Address offset: 0x00 */
+  V uint32_t CR2;           /*!< SPI Control register 2,                          Address offset: 0x04 */
+  V uint32_t CFG1;          /*!< SPI Configuration register 1,                    Address offset: 0x08 */
+  V uint32_t CFG2;          /*!< SPI Configuration register 2,                    Address offset: 0x0C */
+  V uint32_t IER;           /*!< SPI/I2S Interrupt Enable register,               Address offset: 0x10 */
+  V uint32_t SR;            /*!< SPI/I2S Status register,                         Address offset: 0x14 */
+  V uint32_t IFCR;          /*!< SPI/I2S Interrupt/Status flags clear register,   Address offset: 0x18 */
+  uint32_t      RESERVED0;     /*!< Reserved, 0x1C                                                        */
+  V uint32_t TXDR;          /*!< SPI/I2S Transmit data register,                  Address offset: 0x20 */
+  uint32_t      RESERVED1[3];  /*!< Reserved, 0x24-0x2C                                                   */
+  V uint32_t RXDR;          /*!< SPI/I2S Receive data register,                   Address offset: 0x30 */
+  uint32_t      RESERVED2[3];  /*!< Reserved, 0x34-0x3C                                                   */
+  V uint32_t CRCPOLY;       /*!< SPI CRC Polynomial register,                     Address offset: 0x40 */
+  V uint32_t TXCRC;         /*!< SPI Transmitter CRC register,                    Address offset: 0x44 */
+  V uint32_t RXCRC;         /*!< SPI Receiver CRC register,                       Address offset: 0x48 */
+  V uint32_t UDRDR;         /*!< SPI Underrun data register,                      Address offset: 0x4C */
+  V uint32_t I2SCFGR;       /*!< I2S Configuration register,                      Address offset: 0x50 */
+
+}SPI_RegDef_t;
 
 /**
   * @brief System configuration controller
@@ -882,7 +908,7 @@ V uint32_t SWIER2;              /*!< EXTI Software interrupt event register,    
 V uint32_t D3PMR2;              /*!< EXTI D3 Pending mask register, (same register as to SRDPMR2) Address offset: 0x2C */
 V uint32_t D3PCR2L;             /*!< EXTI D3 Pending clear selection register low, (same register as to SRDPCR2L)  Address offset: 0x30 */
 V uint32_t D3PCR2H;             /*!< EXTI D3 Pending clear selection register High, (same register as to SRDPCR2H) Address offset: 0x34 */
-uint32_t      RESERVED2[2];        /*!< Reserved,                                        0x38 to 0x3C         */
+ uint32_t      RESERVED2[2];        /*!< Reserved,                                        0x38 to 0x3C         */
 V uint32_t RTSR3;               /*!< EXTI Rising trigger selection register,          Address offset: 0x40 */
 V uint32_t FTSR3;               /*!< EXTI Falling trigger selection register,         Address offset: 0x44 */
 V uint32_t SWIER3;              /*!< EXTI Software interrupt event register,          Address offset: 0x48 */
@@ -901,6 +927,7 @@ uint32_t      RESERVED5;           /*!< Reserved,                               
 V uint32_t IMR3;                /*!< EXTI Interrupt mask register,                    Address offset: 0xA0 */
 V uint32_t EMR3;                /*!< EXTI Event mask register,                        Address offset: 0xA4 */
 V uint32_t PR3;                 /*!< EXTI Pending register,                           Address offset: 0xA8 */
+uint32_t      RESERVED6[5];           /*!< Reserved,                                   0xAC to 0xBC         */
 }EXTI_RegDef_t;
 
 typedef struct
@@ -945,11 +972,20 @@ V uint32_t PR3;                 /*!< EXTI Pending register,                     
  #define GPIOK_PCLK_EN()  	(RCC-> AHB4ENR |= (1 << 10))
 
 
+/*
+ * Clock Enable Macros for SPIx peripherals
+ */
+#define SPI1_PCLK_EN()      ( RCC->APB2ENR |= (1 << 12) ) /* SPI1 peripheral clock enabled */
+#define SPI2_PCLK_EN()      ( RCC->APB1LENR |= (1 << 14) ) /* SPI2 peripheral clock enabled */
+#define SPI3_PCLK_EN()      ( RCC->APB1LENR |= (1 << 15) ) /* SPI3 peripheral clock enabled */
+#define SPI4_PCLK_EN()      ( RCC->APB2ENR |= (1 << 13) ) /* SPI4 peripheral clock enabled */
+#define SPI5_PCLK_EN()      ( RCC->APB2ENR |= (1 << 20) ) /* SPI5 peripheral clock enabled */
+#define SPI6_PCLK_EN()      ( RCC->APB4ENR |= (1 << 5) ) /* SPI6 peripheral clock enabled */
   /*
    * clock enable macros for SYSCFG peripherals
    */
 
-  #define SYSCFG_PCLK_EN()  (RCC-> APB2ENR |= (1<<14) )
+  #define SYSCFG_PCLK_EN()  (RCC-> APB4ENR |= (1<<2) )
 
 
 
@@ -958,18 +994,28 @@ V uint32_t PR3;                 /*!< EXTI Pending register,                     
    * clock disable macros for GPIO peripherals
    */
 
-  #define GPIOA_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1 << 0))
-  #define GPIOB_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<1) )
-  #define GPIOC_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<2) )
-  #define GPIOD_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<3) )
-  #define GPIOE_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<4) )
-  #define GPIOF_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<5) )
-  #define GPIOG_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<6) )
-  #define GPIOH_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<7) )
-  #define GPIOI_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<8) )
-  #define GPIOJ_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<9) )
-  #define GPIOK_PCLK_DEN()  ~(RCC-> AHB1ENR &= (1<<10) )
+  #define GPIOA_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1 << 0))
+  #define GPIOB_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<1) )
+  #define GPIOC_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<2) )
+  #define GPIOD_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<3) )
+  #define GPIOE_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<4) )
+  #define GPIOF_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<5) )
+  #define GPIOG_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<6) )
+  #define GPIOH_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<7) )
+  #define GPIOI_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<8) )
+  #define GPIOJ_PCLK_DEN()  ~(RCC-> AHB4ENR &= (1<<9) )
+  #define GPIOK_PCLK_DEN()  ~(RCC-> APB4ENR &= (1<<10) )
 
+
+/*
+ * Clock Disable Macros for SPIx peripherals
+ */
+#define SPI1_PCLK_DEN()      ( RCC->APB2ENR &= ~(1 << 12) ) /* SPI1 peripheral clock disabled */
+#define SPI2_PCLK_DEN()      ( RCC->APB1LENR &= ~(1 << 14) ) /* SPI2 peripheral clock disabled */
+#define SPI3_PCLK_DEN()      ( RCC->APB1LENR &= ~(1 << 15) ) /* SPI3 peripheral clock disabled */
+#define SPI4_PCLK_DEN()      ( RCC->APB2ENR &= ~(1 << 13) ) /* SPI4 peripheral clock disabled */
+#define SPI5_PCLK_DEN()      ( RCC->APB2ENR &= ~(1 << 20) ) /* SPI5 peripheral clock disabled */
+#define SPI6_PCLK_DEN()      ( RCC->APB4ENR &= ~(1 << 5) ) /* SPI6 peripheral clock disabled */
 
   /*
    * clock disable macros for SYSCFG peripherals
@@ -978,21 +1024,36 @@ V uint32_t PR3;                 /*!< EXTI Pending register,                     
   #define SYSCFG_PCLK_DEN()  (RCC-> APB2ENR &= (0<<14) )
 
 
+
+
+
+
   /*
    * Macros to reset GPIOx peripherals
    */
 
-  #define GPIOA_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
-  #define GPIOB_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
-  #define GPIOC_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
-  #define GPIOD_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
-  #define GPIOE_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
-  #define GPIOF_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
-  #define GPIOG_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
-  #define GPIOH_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
- #define GPIOI_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
- #define GPIOJ_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
- #define GPIOK_REG_RESET()         do{ (RCC-> AHB1RSTR |= (1<<0)) ;   (RCC-> AHB1RSTR &= ~(1<<0));} while(0)
+  #define GPIOA_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+  #define GPIOB_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+  #define GPIOC_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+  #define GPIOD_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+  #define GPIOE_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+  #define GPIOF_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+  #define GPIOG_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+  #define GPIOH_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+ #define GPIOI_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+ #define GPIOJ_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+ #define GPIOK_REG_RESET()         do{ (RCC-> AHB4RSTR |= (1<<0)) ;   (RCC-> AHB4RSTR &= ~(1<<0));} while(0)
+
+
+/*
+ * Macros to reset SPIx peripherals
+ */
+#define SPI1_REG_RESET()    do{ (RCC->APB2RSTR |= (1 << 12)); (RCC->APB2RSTR &= ~(1 << 12)); }while(0)
+#define SPI2_REG_RESET()    do{ (RCC->APB1LRSTR |= (1 << 14)); (RCC->APB1LRSTR &= ~(1 << 14)); }while(0)
+#define SPI3_REG_RESET()    do{ (RCC->APB1LRSTR |= (1 << 15)); (RCC->APB1LRSTR &= ~(1 << 15)); }while(0)
+#define SPI4_REG_RESET()    do{ (RCC->APB2RSTR |= (1 << 13)); (RCC->APB2RSTR &= ~(1 << 13)); }while(0)
+#define SPI5_REG_RESET()    do{ (RCC->APB2RSTR |= (1 << 20)); (RCC->APB2RSTR &= ~(1 << 20)); }while(0)
+#define SPI6_REG_RESET()    do{ (RCC->APB4RSTR |= (1 << 5)); (RCC->AHB4RSTR &= ~(1 << 5)); }while(0)
 
 
 #define GPIO_BADDR_TO_CODE(x)      ((x == GPIOA) ? 0 :\
@@ -1195,8 +1256,89 @@ typedef enum
  *                                        BIT POSITION DEFINITION FOR SPI PHERIPERAL REGISTERS
  **************************************************************************************************************************************************************/
 
+/*
+ * Bit position definitions SPI_CR1
+ */
+#define SPI_CR1_SPE        		0       // serial peripheral enable
+#define SPI_CR1_MASRX         	8       //enables master to automatically suspends in receiver mode if overrun condition happens
+#define SPI_CR1_CSTART         	9       // master transfer start(starts spi/i12s communication
+#define SPI_CR1_CSUSP     		10		// master suspend request
+#define SPI_CR1_HDDIR         	11      //  Rx/TX direction at half duplex mode
+#define SPI_CR1_SSI   			12		// internal ss signal input level(this bit has an effect only when the ssm bit is set
+#define SPI_CR1_CRC33_17     	13		// crc config
+#define SPI_CR1_RCRCINI     	14		// crc calculation config for receiver
+#define SPI_CR1_TCRCINI   		15		// crc calculation config for transmitter
+#define SPI_CR1_IOLOCK   		16		// to lock AF config of associated I/Os
+
+/*
+ * Bit position definitions SPI_CFG1
+ */
+
+#define SPI_CFG1_DSIZE        	0     //  decides no. of bits at single SPI data frame
+#define SPI_CFG1_FTHLV        	5     //  FIFO threshold level(defines no. of data frames at single data packet)
+#define SPI_CFG1_UDRCFG        	9     //  behaviour of slave transmitter at underrun condition
+#define SPI_CFG1_UDRDET        	11    //  to detect underrun condition at slave transmitter
+#define SPI_CFG1_RxDMAEN        14    //  AS THE NAME ITSELF SAYS, Rx DMA STREAM ENABLE REGISTER
+#define SPI_CFG1_TxDMAEN        15    //  Rx DMA STREAM ENABLE REGISTER
+#define SPI_CFG1_CRCSIZE        16    //  LENGTH OF CRC FRAME TO BE TRANSACTED AND COMPARED
+#define SPI_CFG1_CRCEN 			22    //  HARDWARE CRC COMPUTATION ENABLE?1:0
+#define SPI_CFG1_MBR        	29    //  MASTER BAUD RATE
+
+
+/*
+ * Bit position definitions SPI_CFG2
+ */
+
+#define SPI_CFG2_MSSI       	0		// master SS idleness
+#define SPI_CFG2_MIDI     		4       // master inter-data idleness
+#define SPI_CFG2_IOSWP     		15		// swap functionality of MISO and MOSI pins
+#define SPI_CFG2_COMM     		17		// communication mode(FD,HD,SIMPLEX)
+#define SPI_CFG2_SP     		19		// seraial protocol( motorola or TI)
+#define SPI_CFG2_MASTER     	22		// spi master or slave select register
+#define SPI_CFG2_LSBFRST     	23		// data frame format(lsb or msb transmitted first)
+#define SPI_CFG2_CPHA     		24		// clock phase
+#define SPI_CFG2_CPOL     		25		// clock polarity
+#define SPI_CFG2_SSM     		26		// software management of SS signal input
+#define SPI_CFG2_SSIOP     		28		// ss input/output polarity
+#define SPI_CFG2_SSOE     		29		//ss output enable
+#define SPI_CFG2_SSOM     		30		// ss ouput management in master mode
+#define SPI_CFG2_AFCNTR     	31		// alternate function control(taen into account only when spe=0)
+
+
+/*
+ * Bit position definitions SPI_SR
+ */
+#define SPI_SR_RXP       	    0		//rx packet available
+#define SPI_SR_TXP       	    1		// tx packet space available
+#define SPI_SR_DXP		        2		// duplex packet
+#define SPI_SR_EOT  	        3		// end of transfer
+#define SPI_SR_TXTF     		4		// transmission tranfer filled
+#define SPI_SR_UDR       	    5		// underrun
+#define SPI_SR_OVR        		6		// overrun
+#define SPI_SR_CRCE        	  	7		// CRC error
+#define SPI_SR_TIFRE         	8		// ti frame format error
+#define SPI_SR_MODF         	9		// mode fault
+#define SPI_SR_TSERF         	10
+#define SPI_SR_SUSP             11		// suspension status
+#define SPI_SR_TXC             	12		// TxFIFO transmission complete
+#define SPI_SR_RXPLVL         	13		// RxFIFO packing level
+#define SPI_SR_RXWNE         	14		// RxFIFO word not empty
+#define SPI_SR_CTSIZE         	15      // no. of data frames remaining in current TSIZE session
+
+
+/*
+ * Bit position definitions SPI_IER
+ */
+#define SPI_IER_RXPIE             0
+#define SPI_IER_TXPIE             1
+#define SPI_IER_OVRIE             6
+
+
+
+
 
 #include "stm32h753_gpio_driver.h"
+#include "stm32h753_spi_driver.h"
 
 
 #endif /* STM32H753XX_H_ */
